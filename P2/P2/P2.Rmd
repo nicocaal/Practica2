@@ -1,0 +1,198 @@
+---
+title: "Práctica 2"
+author: "Nicolás Camacho Albiñana"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+## Ejercicio 1
+
+```{r}
+load('data/weatherAUS.RData')
+str(ds)
+```
+
+```{r}
+library(ggplot2)
+grafico1 <- ggplot(data = ds, mapping = aes(x = MinTemp, y = MaxTemp))
+grafico1 <- grafico1 + geom_point() 
+grafico1
+```
+
+```{r}
+grafico2 <- grafico1 + geom_point(aes(color = RainTomorrow))
+grafico2
+```
+
+```{r}
+grafico3 <- grafico2 + ggtitle('Temp max frente a temp min')
+grafico3
+if (!file.exists('results')){
+  dir.create('results')
+}
+ggsave('./results/Ejercicio1.pdf')
+```
+
+## Ejercicio 2
+
+```{r}
+grafico9am <- ggplot(data = ds, mapping = aes(x = Temp9am, y = Pressure9am)) + geom_point()
+grafico9am
+```
+
+```{r}
+grafico9am.punto <- grafico9am + geom_point(aes(pch = RainToday))
+grafico9am.punto
+```
+
+```{r}
+grafico9am.color <- grafico9am + geom_point(aes(color = RainToday))
+grafico9am.color
+```
+
+El color permite ver mejor la clasificación de los puntos, ya que cuando estos están muy cerca la diferencia entre el tipo de punto (pch) no es fácilmente distinguible.
+
+```{r}
+grafico9am.color <- grafico9am.color + labs(title = 'Presion vs temperatura (9 am)', subtitle = 'En función de si lloverá mañana', x = 'Temperatura (ºC)', y = 'Presion (hPa)', color = 'Mañana llueve')
+grafico9am.color
+ggsave('./results/Ejercicio2.pdf')
+```
+
+## Ejercicio 3
+
+```{r}
+load('./data/iris_tidy.RData')
+str(iris.tidy)
+```
+
+```{r}
+iris.grafico1 <- ggplot(data = iris.tidy, mapping = aes(x = Species, y = Value)) + geom_point()
+iris.grafico1
+```
+
+```{r}
+iris.grafico2 <- iris.grafico1 + geom_point(mapping = aes(color = Part))
+iris.grafico2
+```
+
+```{r}
+iris.grafico2.filas <- iris.grafico2 + facet_grid(Measure~.)
+iris.grafico2.filas
+```
+
+```{r}
+iris.grafico2.col <- iris.grafico2 + facet_grid(.~Measure)
+iris.grafico2.col
+```
+
+La distribución en columnas queda más clara, ya que la distribución de puntos es en bandas verticales, debido a la naturaleza categórica de la variable Species.
+
+```{r}
+# En algun momento del codigo hemos definido 2 capas de geom_point
+iris.grafico2.col$layers[[1]] <- NULL # Aqui elimino la primera
+iris.grafico2.col$layers[[1]] <- geom_jitter(aes(color = Part))
+# Y aqui hago que la 2a pase de point a jitter
+
+iris.grafico2.col
+```
+
+Al añadir ruido al gráfico, ahora los puntos dejan de estar superpuestos y se puede ver la cantidad que hay para cada variable.
+
+```{r}
+ggsave('./results/Ejercicio3.pdf')
+```
+
+## Ejercicio 4
+
+```{r}
+load('./data/Ejercicio4_Data.RData')
+str(DatosEjer4)
+```
+
+```{r}
+graf4 <- ggplot(data = DatosEjer4, mapping = aes(x = Fecha, y = Ventas)) + geom_point(aes(color = Fabricante))
+graf4
+```
+
+Es preferible un gráfico de líneas, ya que solo usar puntos añade ruido y confusión al gráfico, al no poderse leer bien la evolución temporal.
+
+```{r}
+graf4 <- graf4 + geom_line(aes(linetype = Fabricante, color = Fabricante)) + labs(title  ='Ventas mensuales de diferentes compañias tecnologicas')
+graf4
+ggsave('./results/Ejercicio4.pdf')
+```
+
+## Ejercicio 5
+
+```{r}
+load('./data/Experimento.RData')
+str(Experimento)
+```
+
+```{r}
+graf.exp <- ggplot(data = Experimento, mapping = aes(x = Dosis, y = Altura)) + geom_point(aes(pch = Complemento)) + geom_line(aes(linetype = Complemento))
+graf.exp
+```
+
+```{r}
+graf.exp <- graf.exp + geom_errorbar(aes(ymin = Altura - Error_Altura, ymax = Altura + Error_Altura), width = 0.1)
+graf.exp
+```
+
+```{r}
+graf.exp2 <- ggplot(data = Experimento, mapping = aes(x = Dosis, y = Altura, color = Complemento, pch = Complemento, linetype = Complemento)) + geom_point() + geom_line() + scale_color_brewer(palette = 'Reds') + theme_classic()
+# Quitamos el fondo con theme_classic para que se vea mejor
+graf.exp2 
+ggsave('./results/Ejercicio5.pdf')
+```
+
+## Ejercicio 6
+
+```{r}
+load('./data/iceRiver.RData')
+str(ice.river.df)
+```
+
+```{r}
+graf.flow <- ggplot(data = ice.river.df) + geom_line(aes(x = time, y = flow.vat, color = 'red')) + geom_line(aes(x = time, y = flow.jok, color = 'blue')) + labs(title = 'Evolucion del caudal en el tiempo', x = 'Año', y = 'Caudal') + scale_color_discrete(name = "Rio", labels = c("vat", "jok"))
+graf.flow
+ggsave('./results/Ejercicio6.pdf')
+```
+
+## Ejercicio 7
+
+```{r}
+load('./data/weatherAUS_distributions.RData')
+str(ds)
+```
+
+```{r}
+graf7 <- ggplot(data = ds) + geom_boxplot(aes(y = MinTemp, x = Year))
+graf7
+```
+
+```{r}
+graf7vi <- ggplot(data = ds) + geom_violin(aes(x = Year, y = MaxTemp, color = Year)) + labs(title = 'Distribucion de temperaturas maximas por año', x = 'Año', y = 'Temperatura (ºC)') + theme(legend.position = 'none', axis.text.x = element_text(angle = 45, hjust = 1))
+graf7vi
+ggsave('./results/Ejercicio7.pdf')
+```
+
+## Ejercicio 8
+
+```{r}
+library(readr)
+ejer8 <- read_delim('http://assets.datacamp.com/blog_assets/chol.txt', delim = ' ')
+str(ejer8)
+```
+
+```{r}
+graf8 <- ggplot(data = ejer8, mapping = aes(x = HEIGHT)) + geom_histogram(aes(y = after_stat(density)), breaks = seq(155, 195, length.out = 20), fill = 'blue', col = 'red', alpha = 0.5) +  geom_density(col = 'green') + labs(title = 'Histograma de la variable altura', x = 'Altura (cm)', y = 'Frecuencia')
+graf8
+```
+
+```{r}
+graf8mort <- ggplot(data = ejer8, mapping = aes(x = HEIGHT)) + geom_histogram(aes(y = after_stat(density)), breaks = seq(155, 195, length.out = 20), fill = 'blue', col = 'red', alpha = 0.5) +  geom_density(col = 'green') + labs(title = 'Histograma de la variable altura', x = 'Altura (cm)', y = 'Frecuencia') + facet_grid(.~MORT)
+graf8mort
+ggsave('./results/Ejercicio8.pdf')
+```
